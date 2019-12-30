@@ -7,6 +7,8 @@
     <script src="p5.collide2d.js"></script>
 </head>
 <body>
+    <div id="rounds-text" style="float: right;">Survived Rounds : 0</div>
+
     <script>
 
         class Player
@@ -86,26 +88,39 @@
         const windowSize = { w : 1200, h : 800 };
 
         const player = new Player();
-        const bullet = new Bullet();
-        const enemys = [];
-        let enemysDirection = 1;
-        let enemysSpeed = 1;
 
-        function setup()
+        let enemysLines = 4;
+        let enemysColumns = 10;
+        let enemysXSpeed = 1;
+        let enemysYSpeed = 1;
+        let enemys = [];
+
+        function loadRound()
         {
-            createCanvas(windowSize.w, windowSize.h);
-            for(let y = 0; y < 4; y++)
+            const level = levels[index];
+            
+            enemy = [];
+            enemysXSpeed = level.xSpeed;
+            enemysYSpeed = level.ySpeed;
+
+            for(let line = 0; line < enemysLines; line++)
             {
                 const enemyLine = [];
-                for(let x = 0; x < 10; x++)
+                for(let column = 0; column < enemysColumns; column++)
                 {
                     const enemy = new Enemy();
-                    enemy.position.x += x * (enemy.size.w * 2);
-                    enemy.position.y += y * (enemy.size.h * 2);
+                    enemy.position.x += column * (enemy.size.w * 2);
+                    enemy.position.y += line * (enemy.size.h * 2);
                     enemyLine.push(enemy);
                 }
                 enemys.push(enemyLine);
             }
+        }
+
+        function setup()
+        {
+            createCanvas(windowSize.w, windowSize.h);
+            loadRound();
         }
 
         function draw()
@@ -118,15 +133,15 @@
                 {
                     if(!enemy.isDead)
                     {
-                        enemy.position.x += enemysDirection;
+                        enemy.position.x += enemysXSpeed;
                         
                         if(isHitBorder(enemy))
                         {
                             for(enemyLine of enemys)
                                 for(enemy of enemyLine)
-                                    enemy.position.y += enemysSpeed;
+                                    enemy.position.y += enemysYSpeed;
                             
-                            enemysDirection = -enemysDirection
+                            enemysXSpeed = -enemysXSpeed
                         }
 
                         if(isHitObject(player.bullet, enemy))
