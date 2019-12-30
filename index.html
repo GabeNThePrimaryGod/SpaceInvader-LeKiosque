@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Space Invader</title>
+    <script src="p5.js"></script>
+    <script src="p5.collide2d.js"></script>
+</head>
+<body>
+    <script>
+
+        class Player
+        {
+            constructor () 
+            {
+                this.position = { x : 600, y : 790 };
+                this.size = { h : 20, w : 100 };
+                this.color = { r: 255, g: 255, b: 255, a: 255 };
+                this.bullet = new Bullet();
+            }
+            
+            draw ()
+            {
+                noStroke();
+                fill(this.color.r, this.color.g, this.color.b, this.color.a);
+                rect(this.position.x - (this.size.w / 2), this.position.y - (this.size.h / 2),
+                     this.size.w, this.size.h);
+                
+                if(!this.bullet.isShooted)
+                {
+                    this.bullet.position.x = this.position.x;
+                    this.bullet.position.y = this.position.y - this.size.h;
+                }
+                else
+                {
+                    this.bullet.shoot();
+                }
+
+                this.bullet.draw();
+            }
+        }
+
+        class Bullet
+        {
+            constructor ()
+            {
+                this.position = { x : 0, y : 0 };
+                this.size = { h : 20, w : 20 };
+                this.color = { r: 0, g: 255, b:255, a: 255 };
+                this.isShooted = false;
+            }
+            
+            draw ()
+            {
+                noStroke();
+                fill(this.color.r, this.color.g, this.color.b, this.color.a);
+                rect(this.position.x - (this.size.w / 2), this.position.y - (this.size.h / 2),
+                     this.size.w, this.size.h);
+            }
+
+            shoot ()
+            {
+                this.position.y -= 10;
+            }
+        }
+
+        class Enemy
+        {
+            constructor () 
+            {
+                this.position = { x : 50, y : 50 };
+                this.size = { h : 30, w : 30 };
+                this.color = { r: 255, g: 0, b: 0, a: 255 };
+                this.isDead = false;
+            }
+            
+            draw ()
+            {
+                noStroke();
+                fill(this.color.r, this.color.g, this.color.b, this.color.a);
+                rect(this.position.x - (this.size.w / 2), this.position.y - (this.size.h / 2),
+                     this.size.w, this.size.h);
+            }
+        }
+
+        const windowSize = { w : 1200, h : 800 };
+
+        const player = new Player();
+        const bullet = new Bullet();
+        const enemys = [];
+        let enemysDirection = 1;
+        let enemysSpeed = 1;
+
+        function setup()
+        {
+            createCanvas(windowSize.w, windowSize.h);
+            for(let y = 0; y < 4; y++)
+            {
+                const enemyLine = [];
+                for(let x = 0; x < 10; x++)
+                {
+                    const enemy = new Enemy();
+                    enemy.position.x += x * (enemy.size.w * 2);
+                    enemy.position.y += y * (enemy.size.h * 2);
+                    enemyLine.push(enemy);
+                }
+                enemys.push(enemyLine);
+            }
+        }
+
+        function draw()
+        {
+            background(10, 10, 10, 100);
+
+            for(enemyLine of enemys)
+            {
+                for(enemy of enemyLine)
+                {
+                    if(!enemy.isDead)
+                    {
+                        enemy.position.x += enemysDirection;
+                        
+                        if(isHitBorder(enemy))
+                        {
+                            for(enemyLine of enemys)
+                                for(enemy of enemyLine)
+                                    enemy.position.y += enemysSpeed;
+                            
+                            enemysDirection = -enemysDirection
+                        }
+
+                        if(isHitObject(player.bullet, enemy))
+                        {
+                            enemy.isDead = true;
+                            player.bullet.isShooted = false;
+                        }
+                        enemy.draw();
+                    }
+                }
+            }
+            
+            if(isHitBorder(player.bullet))
+                player.bullet.isShooted = false;
+
+            player.position.x = mouseX;
+            isHitBorder(player);  
+            player.draw();
+        }
+
+        function mouseClicked()
+        {
+            player.bullet.isShooted = true;
+        }
+
+        function isHitObject(object1, object2)
+        {
+            if (object1.position.x + object1.size.w >= object2.position.x &&
+                object1.position.x <= object2.position.x + object2.size.w &&
+                object1.position.y + object1.size.h >= object2.position.y &&
+                object1.position.y <= object2.position.y + object2.size.h) 
+                return true;
+            return false;
+        }
+
+        function isHitBorder(object)
+        {
+            if(object.position.x > windowSize.w)
+            {
+                object.position.x = windowSize.w;
+                return true;
+            }
+            if(object.position.x < 0)
+            {
+                object.position.x = 0;
+                return true;
+            }
+            if(object.position.y > windowSize.h)
+            {
+                object.position.y = windowSize.h;
+                return true;    
+            }
+            if(object.position.y < 0)
+            {
+                object.position.y = 0;
+                return true;
+            }
+            return false;
+        }
+
+    </script>
+    
+</body>
+</html>
